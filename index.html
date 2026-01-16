@@ -2,122 +2,144 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>3D Home Walkthrough</title>
+<title>Home Walkthrough</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
 <style>
-  body {
-    margin: 0;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-  }
-  #info {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    padding: 10px;
-    z-index: 10;
-    font-size: 14px;
-  }
-  .controls {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 12px;
-    z-index: 10;
-  }
-  .btn {
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    padding: 16px;
-    border-radius: 50%;
-    user-select: none;
-    font-size: 16px;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: Arial, sans-serif;
+}
+
+#info {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 8px 10px;
+  font-size: 13px;
+  z-index: 10;
+}
+
+#controls {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+#controls button {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+}
 </style>
 </head>
 
 <body>
 
 <div id="info">
-  Drag screen to look<br>
-  Use buttons to move
+Drag screen to look<br>
+Buttons to move
 </div>
 
-<div class="controls">
-  <div class="btn" ontouchstart="mf=true" ontouchend="mf=false">▲</div>
-  <div class="btn" ontouchstart="ml=true" ontouchend="ml=false">◀</div>
-  <div class="btn" ontouchstart="mr=true" ontouchend="mr=false">▶</div>
-  <div class="btn" ontouchstart="mb=true" ontouchend="mb=false">▼</div>
+<div id="controls">
+  <button id="left">◀</button>
+  <button id="forward">▲</button>
+  <button id="back">▼</button>
+  <button id="right">▶</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 
 <script>
-// ===== SCENE =====
+/* SCENE */
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xcccccc);
+scene.background = new THREE.Color(0xeaeaea);
 
-// ===== CAMERA =====
+/* CAMERA */
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-camera.position.set(0, 1.6, 8);
+camera.position.set(0, 1.6, 6);
 
-// ===== RENDERER =====
+/* RENDERER */
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// ===== CONTROLS (MOBILE SAFE) =====
+/* CONTROLS */
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableZoom = false;
 controls.enablePan = false;
+controls.enableDamping = true;
 controls.target.set(0, 1.6, 0);
 controls.update();
 
-// ===== LIGHT =====
-scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-dirLight.position.set(5, 10, 5);
-scene.add(dirLight);
+/* LIGHT */
+scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+const light = new THREE.DirectionalLight(0xffffff, 0.6);
+light.position.set(5, 10, 7);
+scene.add(light);
 
-// ===== FLOOR =====
+/* FLOOR */
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(20, 20),
-  new THREE.MeshStandardMaterial({ color: 0xdddddd })
+  new THREE.MeshStandardMaterial({ color: 0xcccccc })
 );
 floor.rotation.x = -Math.PI / 2;
-floor.position.y = 0;
 scene.add(floor);
 
-// ===== WALLS =====
+/* WALL MATERIAL */
 const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+/* WALLS */
 function wall(w, h, d, x, y, z) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+  const m = new THREE.Mesh(
+    new THREE.BoxGeometry(w, h, d),
+    wallMat
+  );
   m.position.set(x, y, z);
   scene.add(m);
 }
 
-const H = 3, T = 0.3, S = 10;
-wall(S, H, T, 0, H / 2, -S / 2);
-wall(S, H, T, 0, H / 2,  S / 2);
-wall(T, H, S, -S / 2, H / 2, 0);
-wall(T, H, S,  S / 2, H / 2, 0);
+/* ROOM */
+wall(20, 3, 0.2, 0, 1.5, -10); // back
+wall(20, 3, 0.2, 0, 1.5, 10);  // front
+wall(0.2, 3, 20, -10, 1.5, 0); // left
+wall(0.2, 3, 20, 10, 1.5, 0);  // right
 
-// ===== DEBUG AXIS (TEMPORARY) =====
+/* DEBUG AXIS (CONFIRM VISIBILITY) */
 scene.add(new THREE.AxesHelper(5));
 
-// ===== MOVEMENT =====
-let mf = false, mb = false, ml = false, mr = false;
-const speed = 0.08;
+/* MOVEMENT */
+let move = { f:false, b:false, l:false, r:false };
+const speed = 0.15;
+
+document.getElementById("forward").ontouchstart = () => move.f = true;
+document.getElementById("forward").ontouchend = () => move.f = false;
+document.getElementById("back").ontouchstart = () => move.b = true;
+document.getElementById("back").ontouchend = () => move.b = false;
+document.getElementById("left").ontouchstart = () => move.l = true;
+document.getElementById("left").ontouchend = () => move.l = false;
+document.getElementById("right").ontouchstart = () => move.r = true;
+document.getElementById("right").ontouchend = () => move.r = false;
 
 function animate() {
   requestAnimationFrame(animate);
@@ -127,20 +149,19 @@ function animate() {
   dir.y = 0;
   dir.normalize();
 
-  const right = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
+  const side = new THREE.Vector3().crossVectors(camera.up, dir).normalize();
 
-  if (mf) camera.position.addScaledVector(dir, speed);
-  if (mb) camera.position.addScaledVector(dir, -speed);
-  if (ml) camera.position.addScaledVector(right, speed);
-  if (mr) camera.position.addScaledVector(right, -speed);
+  if (move.f) camera.position.addScaledVector(dir, speed);
+  if (move.b) camera.position.addScaledVector(dir, -speed);
+  if (move.l) camera.position.addScaledVector(side, speed);
+  if (move.r) camera.position.addScaledVector(side, -speed);
 
   controls.update();
   renderer.render(scene, camera);
 }
-
 animate();
 
-// ===== RESIZE =====
+/* RESIZE */
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
